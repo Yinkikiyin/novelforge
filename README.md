@@ -2,6 +2,8 @@
 
 通过性格测试分析你的内在人格，AI 为你量身打造独一无二的小说世界。
 
+**🌐 在线体验：[novelforge-site.netlify.app](https://novelforge-site.netlify.app)**
+
 ## 功能
 
 - 🧠 **18 道性格测试题**：6 维度人格分析（勇气、理想、热血、利他、叛逆、开朗）
