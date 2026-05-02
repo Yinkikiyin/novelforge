@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const BACKEND = 'http://localhost:3001';
+const BACKEND = process.env.BACKEND_URL || 'http://localhost:3001';
 
 export async function GET(request, { params }) {
   return proxy(request, params);
