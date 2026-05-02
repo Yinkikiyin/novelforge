@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  novels    Novel[]
+}
+
+model Novel {
+  id                  String   @id @default(uuid())
+  title               String
+  worldSetting        String
+  plot                String
+  protagonistProfile  Json
+  dimensionScores     Json
+  createdAt           DateTime @default(now())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
