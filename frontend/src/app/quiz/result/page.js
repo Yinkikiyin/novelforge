@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -16,15 +16,17 @@ const dimLabels = {
 export default function ResultPage() {
   const [result, setResult] = useState(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
+  const isGuest = searchParams.get('guest') === 'true';
 
   useEffect(() => {
-    if (!user) { router.push('/login'); return; }
+    if (!user && !isGuest) { router.push('/login'); return; }
     const stored = localStorage.getItem('lastResult');
     if (stored) {
       try { setResult(JSON.parse(stored)); } catch { router.push('/quiz'); }
     } else { router.push('/quiz'); }
-  }, [user]);
+  }, [user, isGuest]);
 
   if (!result) {
     return (
@@ -80,14 +82,26 @@ export default function ResultPage() {
       </div>
 
       {/* Plot */}
-      <div className="card mb-8">
+      <div className="card mb-6">
         <h3 className="text-xs font-semibold text-[#9CA3AF] uppercase tracking-wide mb-3">📖 故事主线</h3>
         <p className="text-[#2D2B3D] leading-relaxed whitespace-pre-wrap text-[15px]">{plot}</p>
       </div>
 
+      {/* 游客注册引导 */}
+      {isGuest && (
+        <div className="card mb-6" style={{ background: 'linear-gradient(135deg, #EDE9FE, #FCE7F3)', textAlign: 'center' }}>
+          <p className="text-sm text-[#6B7280] mb-3">📚 喜欢这篇小说？注册账号永久保存到你的专属小说库</p>
+          <Link href="/register" className="btn-primary text-sm">免费注册 · 保存小说</Link>
+        </div>
+      )}
+
       <div className="flex gap-3 justify-center">
-        <Link href="/quiz" className="btn-outline">重新测试</Link>
-        <Link href="/dashboard" className="btn-primary">我的小说库</Link>
+        <Link href={isGuest ? "/quiz?guest=true" : "/quiz"} className="btn-outline">重新测试</Link>
+        {user ? (
+          <Link href="/dashboard" className="btn-primary">我的小说库</Link>
+        ) : (
+          <Link href="/register" className="btn-primary">注册保存小说</Link>
+        )}
       </div>
     </div>
   );

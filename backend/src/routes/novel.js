@@ -31,25 +31,62 @@ const realDimensionMap = {
 };
 
 function calculateScores(answers) {
-  const scores = { bravery: 0, idealism: 0, passion: 0, altruism: 0, rebellion: 0, extraversion: 0 };
+  const rawScores = { bravery: 0, idealism: 0, passion: 0, altruism: 0, rebellion: 0, extraversion: 0 };
   const counts = { bravery: 0, idealism: 0, passion: 0, altruism: 0, rebellion: 0, extraversion: 0 };
+  const totalWeight = { bravery: 0, idealism: 0, passion: 0, altruism: 0, rebellion: 0, extraversion: 0 };
 
   for (const ans of answers) {
     const question = questions.find(q => q.id === ans.questionId);
     if (!question) continue;
     const dimKey = realDimensionMap[question.dimension];
     if (!dimKey) continue;
-    scores[dimKey] += ans.value;
+
+    const v = ans.value;
+    const weight = (v === 1 || v === 5) ? 1.5 : 1.0;
+    rawScores[dimKey] += v * weight;
+    totalWeight[dimKey] += weight;
     counts[dimKey] += 1;
   }
 
   const avgScores = {};
   for (const key of dimensionKeys) {
-    avgScores[key] = counts[key] > 0 ? Math.round((scores[key] / counts[key]) * 10) / 10 : 3;
+    if (counts[key] > 0) {
+      const weightedAvg = rawScores[key] / totalWeight[key];
+      const deviation = weightedAvg - 3;
+      const amplified = 3 + deviation * 1.3;
+      avgScores[key] = Math.round(Math.max(1, Math.min(5, amplified)) * 10) / 10;
+    } else {
+      avgScores[key] = 3;
+    }
   }
 
   return avgScores;
 }
+
+router.post('/generate-guest', async (req, res) => {
+  try {
+    const { answers } = req.body;
+    if (!answers || !Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ error: '请提供有效的答案数据' });
+    }
+
+    const scores = calculateScores(answers);
+    const profile = buildPersonalityProfile(scores);
+    const novel = await generateNovel(answers, scores);
+
+    res.json({
+      title: novel.title,
+      worldSetting: novel.worldSetting,
+      plot: novel.plot,
+      protagonistProfile: profile,
+      dimensionScores: scores,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('Guest novel generation error:', err);
+    res.status(500).json({ error: '小说生成失败，请稍后重试' });
+  }
+});
 
 router.post('/generate', authMiddleware, async (req, res) => {
   try {

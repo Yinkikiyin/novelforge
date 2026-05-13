@@ -6,7 +6,7 @@ import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/login', { email, password });
+      const { data } = await api.post('/auth/login', { phone, password });
       login(data.user, data.token);
       router.push('/quiz');
     } catch (err) {
@@ -40,9 +40,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#6B7280] mb-1.5">邮箱</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="input-field" placeholder="your@email.com" />
+            <label className="block text-sm font-medium text-[#6B7280] mb-1.5">手机号</label>
+            <input type="text" value={phone} onChange={e => setPhone(e.target.value)} required
+              className="input-field" placeholder="输入手机号" />
           </div>
           <div>
             <label className="block text-sm font-medium text-[#6B7280] mb-1.5">密码</label>

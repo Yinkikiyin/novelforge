@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -13,14 +13,16 @@ export default function QuizPage() {
   const [animating, setAnimating] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const timerRef = useRef(null);
+  const isGuest = searchParams.get('guest') === 'true';
 
   useEffect(() => {
-    if (!user) { router.push('/login'); return; }
+    if (!user && !isGuest) { router.push('/login'); return; }
     loadQuestions();
     return () => clearTimeout(timerRef.current);
-  }, [user]);
+  }, [user, isGuest]);
 
   const loadQuestions = async () => {
     try {
@@ -63,9 +65,10 @@ export default function QuizPage() {
     setSubmitting(true);
     const payload = questions.map(q => ({ questionId: q.id, value: answers[q.id] }));
     try {
-      const { data } = await api.post('/novel/generate', { answers: payload });
+      const endpoint = isGuest ? '/novel/generate-guest' : '/novel/generate';
+      const { data } = await api.post(endpoint, { answers: payload });
       localStorage.setItem('lastResult', JSON.stringify(data));
-      router.push('/quiz/result');
+      router.push(isGuest ? '/quiz/result?guest=true' : '/quiz/result');
     } catch (err) {
       setError(err.response?.data?.error || '生成失败');
       setSubmitting(false);
@@ -92,7 +95,7 @@ export default function QuizPage() {
   const q = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
   const allAnswered = Object.keys(answers).length === questions.length;
-  const hasAnswered = answers[q.id] !== undefined;
+  const hasAnswered = answers[q?.id] !== undefined;
 
   return (
     <div className="max-w-2xl mx-auto min-h-[70vh] flex flex-col px-4 py-8">
