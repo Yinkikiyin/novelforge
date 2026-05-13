@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
@@ -13,7 +13,7 @@ const dimLabels = {
   altruism: '利他', rebellion: '叛逆', extraversion: '开朗',
 };
 
-export default function ResultPage() {
+function ResultContent() {
   const [result, setResult] = useState(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -104,5 +104,17 @@ export default function ResultPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-2 border-[#8B5CF6] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <ResultContent />
+    </Suspense>
   );
 }
