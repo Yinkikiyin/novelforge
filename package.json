@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "cd backend && npm install",
+    "start": "cd backend && npx prisma generate && npx prisma db push && node src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
